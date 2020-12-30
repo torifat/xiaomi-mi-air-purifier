@@ -12,11 +12,17 @@
         "default": "Air Purifier",
         "placeholder": "Air Purifier"
       },
-      "host": {
+      "address": {
         "title": "IP Address",
         "type": "string",
         "required": true,
         "format": "ipv4"
+      },
+      "token": {
+        "title": "Token",
+        "type": "string",
+        "required": true,
+        "pattern": "^\\w{32}$"
       },
       "showAirQuality": {
         "title": "Show Air Quality",
