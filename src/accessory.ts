@@ -4,13 +4,13 @@ import {
   API,
   Logger,
   Service,
-  Characteristic,
 } from 'homebridge';
 import miio from '@rifat/miio';
-import { retry } from './utils';
+import { retry, isDefined } from './utils';
 import { add as addActive } from './characteristics/active';
 import { add as addCurrentAirPurifierState } from './characteristics/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/target-air-purifier-state';
+import { add as addCurrentTemperature } from './characteristics/current-temperature';
 
 // export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
 //   token: string;
@@ -30,6 +30,7 @@ interface Device {
 export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
   private readonly name: string;
   private readonly airPurifierService: Service;
+  private readonly temperatureSensorService?: Service;
 
   private connection?: Promise<Device>;
   protected readonly device: Promise<Device>;
@@ -59,6 +60,15 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       this.airPurifierService,
       Characteristic.TargetAirPurifierState,
     );
+
+    if (config.showTemperature) {
+      this.temperatureSensorService = new Service.TemperatureSensor(this.name);
+      addCurrentTemperature(
+        this.device,
+        this.temperatureSensorService,
+        Characteristic.CurrentTemperature,
+      );
+    }
   }
 
   connect() {
@@ -88,6 +98,8 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
    * It should return all services which should be added to the accessory.
    */
   getServices(): Service[] {
-    return [this.airPurifierService];
+    return [this.airPurifierService, this.temperatureSensorService].filter(
+      isDefined,
+    );
   }
 }

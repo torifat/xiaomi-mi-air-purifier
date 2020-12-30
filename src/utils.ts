@@ -22,3 +22,6 @@ export const retry = (
           : reject(reason),
       ),
   );
+
+export const isDefined = <T>(value: T): value is NonNullable<T> =>
+  value != null;
