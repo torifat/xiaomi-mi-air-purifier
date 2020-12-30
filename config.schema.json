@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "XiaomiMiAirPurifier",
   "pluginType": "platform",
   "singular": true,
   "schema": {
