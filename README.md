@@ -1,10 +1,8 @@
-
 <p align="center">
 
 <img src="https://github.com/homebridge/branding/raw/master/logos/homebridge-wordmark-logo-vertical.png" width="150">
 
 </p>
-
 
 # Homebridge Platform Plugin Template
 
@@ -14,7 +12,7 @@ This template should be use in conjunction with the [developer documentation](ht
 
 ## Clone As Template
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+Click the link below to create a new GitHub Repository using this template, or click the _Use This Template_ button above.
 
 <span align="center">
 
@@ -26,7 +24,7 @@ Click the link below to create a new GitHub Repository using this template, or c
 
 To develop Homebridge plugins you must have Node.js 12 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
 
-* [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
 
 ## Install Development Dependencies
 
@@ -40,10 +38,10 @@ npm install
 
 Open the [`package.json`](./package.json) and change the following attributes:
 
-* `name` - this should be prefixed with `homebridge-` or `@username/homebridge-` and contain no spaces or special characters apart from a dashes
-* `displayName` - this is the "nice" name displayed in the Homebridge UI
-* `repository.url` - Link to your GitHub repo
-* `bugs.url` - Link to your GitHub repo issues page
+- `name` - this should be prefixed with `homebridge-` or `@username/homebridge-` and contain no spaces or special characters apart from a dashes
+- `displayName` - this is the "nice" name displayed in the Homebridge UI
+- `repository.url` - Link to your GitHub repo
+- `bugs.url` - Link to your GitHub repo issues page
 
 When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
 
@@ -51,12 +49,12 @@ When you are ready to publish the plugin you should set `private` to false, or r
 
 Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
 
-* `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-* `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file. 
+- `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
+- `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file.
 
 Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
 
-* `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
+- `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
 
 ## Build Plugin
 
@@ -94,9 +92,9 @@ This will launch an instance of Homebridge in debug mode which will restart ever
 
 You can now start customising the plugin template to suit your requirements.
 
-* [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-* [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-* [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
+- [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
+- [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
+- [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
 
 ## Versioning Your Plugin
 
@@ -131,7 +129,7 @@ If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will 
 
 #### Publishing Beta Versions
 
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
+You can publish _beta_ versions of your plugin for other users to test before you release it to everyone.
 
 ```bash
 # create a new pre-release version (eg. 2.1.0-beta.1)
@@ -141,10 +139,8 @@ npm version prepatch --preid beta
 npm publish --tag=beta
 ```
 
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
+Users can then install the _beta_ version by appending `@beta` to the install command, for example:
 
 ```
 sudo npm install -g homebridge-example-plugin@beta
 ```
-
-

@@ -1,7 +1,7 @@
 {
   "pluginAlias": "XiaomiMiAirPurifier",
-  "pluginType": "platform",
-  "singular": true,
+  "pluginType": "accessory",
+  "singular": false,
   "schema": {
     "type": "object",
     "properties": {
@@ -9,7 +9,39 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Air Purifier",
+        "placeholder": "Air Purifier"
+      },
+      "host": {
+        "title": "IP Address",
+        "type": "string",
+        "required": true,
+        "format": "ipv4"
+      },
+      "showAirQuality": {
+        "title": "Show Air Quality",
+        "type": "boolean",
+        "default": true
+      },
+      "showTemperature": {
+        "title": "Show Temperature",
+        "type": "boolean",
+        "default": true
+      },
+      "showHumidity": {
+        "title": "Show Humidity",
+        "type": "boolean",
+        "default": true
+      },
+      "enableLED": {
+        "title": "Enable LED",
+        "type": "boolean",
+        "default": true
+      },
+      "enableBuzzer": {
+        "title": "Enable Buzzer",
+        "type": "boolean",
+        "default": true
       }
     }
   }
