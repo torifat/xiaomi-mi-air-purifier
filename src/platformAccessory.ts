@@ -27,19 +27,19 @@ export class ExamplePlatformAccessory {
 
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
-    private readonly accessory: PlatformAccessory
+    private readonly accessory: PlatformAccessory,
   ) {
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
         this.platform.Characteristic.Manufacturer,
-        'Default-Manufacturer'
+        'Default-Manufacturer',
       )
       .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
       .setCharacteristic(
         this.platform.Characteristic.SerialNumber,
-        'Default-Serial'
+        'Default-Serial',
       );
 
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
@@ -52,7 +52,7 @@ export class ExamplePlatformAccessory {
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     this.service.setCharacteristic(
       this.platform.Characteristic.Name,
-      accessory.context.device.exampleDisplayName
+      accessory.context.device.exampleDisplayName,
     );
 
     // each service must implement at-minimum the "required characteristics" for the given service type
@@ -86,7 +86,7 @@ export class ExamplePlatformAccessory {
       this.accessory.addService(
         this.platform.Service.MotionSensor,
         'Motion Sensor One Name',
-        'YourUniqueIdentifier-1'
+        'YourUniqueIdentifier-1',
       );
 
     const motionSensorTwoService =
@@ -94,7 +94,7 @@ export class ExamplePlatformAccessory {
       this.accessory.addService(
         this.platform.Service.MotionSensor,
         'Motion Sensor Two Name',
-        'YourUniqueIdentifier-2'
+        'YourUniqueIdentifier-2',
       );
 
     /**
@@ -114,20 +114,20 @@ export class ExamplePlatformAccessory {
       // push the new value to HomeKit
       motionSensorOneService.updateCharacteristic(
         this.platform.Characteristic.MotionDetected,
-        motionDetected
+        motionDetected,
       );
       motionSensorTwoService.updateCharacteristic(
         this.platform.Characteristic.MotionDetected,
-        !motionDetected
+        !motionDetected,
       );
 
       this.platform.log.debug(
         'Triggering motionSensorOneService:',
-        motionDetected
+        motionDetected,
       );
       this.platform.log.debug(
         'Triggering motionSensorTwoService:',
-        !motionDetected
+        !motionDetected,
       );
     }, 10000);
   }
@@ -177,7 +177,7 @@ export class ExamplePlatformAccessory {
    */
   setBrightness(
     value: CharacteristicValue,
-    callback: CharacteristicSetCallback
+    callback: CharacteristicSetCallback,
   ) {
     // implement your own code to set the brightness
     this.exampleStates.Brightness = value as number;
