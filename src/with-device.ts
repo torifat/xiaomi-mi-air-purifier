@@ -4,14 +4,15 @@ import {
   CharacteristicSetCallback,
 } from 'homebridge';
 
-type Getter<T> = (device: T) => Promise<CharacteristicValue>;
+type Getter<T> = (device: T) => Promise<CharacteristicValue | undefined>;
 type Setter<T> = (
   device: T,
   value: CharacteristicValue,
-) => Promise<CharacteristicValue>;
+) => Promise<CharacteristicValue | undefined>;
 type GetterOrSetter<T> = Getter<T> | Setter<T>;
 
 function isGetter<T>(fn: GetterOrSetter<T>): fn is Getter<T> {
+  console.log('fn.length', fn.length);
   return fn.length === 1;
 }
 

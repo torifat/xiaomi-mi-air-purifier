@@ -1,6 +1,7 @@
 import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../with-device';
+import { withDevice } from '../../with-device';
 
+// https://developers.homebridge.io/#/characteristic/CurrentAirPurifierState
 export function add(
   maybeDevice: Promise<any>,
   service: Service,
