@@ -10,6 +10,8 @@ import { retry, isDefined } from './utils';
 import { add as addActive } from './characteristics/air-purifier/active';
 import { add as addCurrentAirPurifierState } from './characteristics/air-purifier/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/air-purifier/target-air-purifier-state';
+import { add as addAirQuality } from './characteristics/air-quality';
+import { add as addPm2_5Density } from './characteristics/pm2_5-density';
 import { add as addCurrentTemperature } from './characteristics/current-temperature';
 import { add as addCurrentRelativeHumidity } from './characteristics/current-relative-humidity';
 
@@ -38,6 +40,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
   protected readonly config: XiaomiMiAirPurifierAccessoryConfig;
 
   private readonly airPurifierService: Service;
+  private readonly airQualitySensorService?: Service;
   private readonly temperatureSensorService?: Service;
   private readonly humiditySensorService?: Service;
 
@@ -60,7 +63,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       Service: {
         AirPurifier,
         HumiditySensor,
-        AccessoryInformation,
+        AirQualitySensor,
         TemperatureSensor,
       },
       Characteristic,
@@ -84,6 +87,22 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
     );
 
     // Optional characteristics
+    if (config.showAirQuality) {
+      this.airQualitySensorService = new AirQualitySensor(
+        `Air Quality on ${this.name}`,
+      );
+      addAirQuality(
+        this.device,
+        this.airQualitySensorService,
+        Characteristic.AirQuality,
+      );
+      addPm2_5Density(
+        this.device,
+        this.airQualitySensorService,
+        Characteristic.PM2_5Density,
+      );
+    }
+
     if (config.showTemperature) {
       this.temperatureSensorService = new TemperatureSensor(
         `Temperature on ${this.name}`,
@@ -136,6 +155,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
   getServices(): Service[] {
     return [
       this.airPurifierService,
+      this.airQualitySensorService,
       this.temperatureSensorService,
       this.humiditySensorService,
     ].filter(isDefined);
