@@ -7,7 +7,7 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.CurrentTemperature,
 ) {
-  const useDevice = withDevice(maybeDevice);
+  const useDevice = withDevice<number>(maybeDevice);
 
   maybeDevice.then((device) => {
     device.on('temperatureChanged', ({ value }) => {

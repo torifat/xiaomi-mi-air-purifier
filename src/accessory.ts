@@ -10,6 +10,7 @@ import { retry, isDefined } from './utils';
 import { add as addActive } from './characteristics/air-purifier/active';
 import { add as addCurrentAirPurifierState } from './characteristics/air-purifier/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/air-purifier/target-air-purifier-state';
+import { add as addRotationSpeed } from './characteristics/air-purifier/rotation-speed';
 import { add as addAirQuality } from './characteristics/air-quality';
 import { add as addPm2_5Density } from './characteristics/pm2_5-density';
 import { add as addCurrentTemperature } from './characteristics/current-temperature';
@@ -22,11 +23,10 @@ const RETRY_DELAY = 5000;
 export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
   token: string;
   address: string;
-  showAirQuality: boolean;
-  showTemperature: boolean;
-  showHumidity: boolean;
-  showLED: boolean;
-  showBuzzer: boolean;
+  enableAirQuality: boolean;
+  enableTemperature: boolean;
+  enableHumidity: boolean;
+  enableRotationSpeed: boolean;
 }
 
 function isValidConfig(
@@ -72,6 +72,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
     this.name = config.name;
     this.device = this.connect();
 
+    // Air Purifier Service
     // Required characteristics
     this.airPurifierService = new AirPurifier(this.name);
     addActive(this.device, this.airPurifierService, Characteristic.Active);
@@ -87,7 +88,16 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
     );
 
     // Optional characteristics
-    if (config.showAirQuality) {
+    if (config.enableRotationSpeed) {
+      addRotationSpeed(
+        this.device,
+        this.airPurifierService,
+        Characteristic.RotationSpeed,
+      );
+    }
+
+    // Air Quality Sensor Service
+    if (config.enableAirQuality) {
       this.airQualitySensorService = new AirQualitySensor(
         `Air Quality on ${this.name}`,
       );
@@ -103,10 +113,12 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       );
     }
 
-    if (config.showTemperature) {
+    // Temperature Sensor Service
+    if (config.enableTemperature) {
       this.temperatureSensorService = new TemperatureSensor(
         `Temperature on ${this.name}`,
       );
+
       addCurrentTemperature(
         this.device,
         this.temperatureSensorService,
@@ -114,7 +126,8 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       );
     }
 
-    if (config.showHumidity) {
+    // Humidity Sensor Service
+    if (config.enableHumidity) {
       this.humiditySensorService = new HumiditySensor(
         `Humidity on ${this.name}`,
       );

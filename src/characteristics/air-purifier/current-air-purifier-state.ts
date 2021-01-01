@@ -7,19 +7,23 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.CurrentAirPurifierState,
 ) {
-  const useDevice = withDevice(maybeDevice);
-  const {
-    INACTIVE,
-    // IDLE, // Turning off idle state
-    PURIFYING_AIR,
-  } = characteristic;
+  const { INACTIVE, IDLE, PURIFYING_AIR } = characteristic;
+  const useDevice = withDevice<typeof INACTIVE | typeof PURIFYING_AIR>(
+    maybeDevice,
+  );
 
   maybeDevice.then((device) => {
-    // TODO: powerChanged doesn't work. Investigate in miio
-    device.on('powerChanged', (isOn) => {
+    device.on('powerChanged', (isOn: boolean) => {
       service.updateCharacteristic(
         characteristic,
         isOn ? PURIFYING_AIR : INACTIVE,
+      );
+    });
+
+    device.on('fanSpeedChanged', (speed: number) => {
+      service.updateCharacteristic(
+        characteristic,
+        speed > 0 ? PURIFYING_AIR : IDLE,
       );
     });
   });

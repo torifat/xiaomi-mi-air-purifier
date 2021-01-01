@@ -7,7 +7,7 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.PM2_5Density,
 ) {
-  const useDevice = withDevice(maybeDevice);
+  const useDevice = withDevice<number>(maybeDevice);
 
   maybeDevice.then((device) => {
     device.on('pm2.5Changed', (value) => {

@@ -7,10 +7,10 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.CurrentRelativeHumidity,
 ) {
-  const useDevice = withDevice(maybeDevice);
+  const useDevice = withDevice<number>(maybeDevice);
 
   maybeDevice.then((device) => {
-    device.on('relativeHumidityChanged', (value) => {
+    device.on('relativeHumidityChanged', (value: number) => {
       service.updateCharacteristic(characteristic, value);
     });
   });

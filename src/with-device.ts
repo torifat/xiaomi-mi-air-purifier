@@ -1,41 +1,32 @@
 import {
   CharacteristicGetCallback,
-  CharacteristicValue,
   CharacteristicSetCallback,
+  CharacteristicValue,
+  Nullable,
 } from 'homebridge';
 
-type Getter<T> = (device: T) => Promise<CharacteristicValue | undefined>;
-type Setter<T> = (
-  device: T,
-  value: CharacteristicValue,
-) => Promise<CharacteristicValue | undefined>;
-type GetterOrSetter<T> = Getter<T> | Setter<T>;
+type Getter<T, U> = (device: U) => Promise<T | undefined>;
+type Setter<T, U> = (device: U, value: T) => Promise<T | undefined>;
+type GetterOrSetter<T, U> = Getter<T, U> | Setter<T, U>;
 
-function isGetter<T>(fn: GetterOrSetter<T>): fn is Getter<T> {
-  console.log('fn.length', fn.length);
+function isGetter<T, U>(fn: GetterOrSetter<T, U>): fn is Getter<T, U> {
+  // NOTE: not a very reliable check but does the job for now
   return fn.length === 1;
 }
 
-export const withDevice = <T>(maybeDevice: Promise<T>) => (
-  fn: GetterOrSetter<T>,
-) =>
+export const withDevice = <T extends CharacteristicValue, U = any>(
+  maybeDevice: Promise<U>,
+) => (fn: GetterOrSetter<T, U>) =>
   isGetter(fn)
-    ? async (callback: CharacteristicGetCallback) => {
-        try {
-          const device = await maybeDevice;
-          callback(null, await fn(device));
-        } catch (err) {
-          callback(err);
-        }
+    ? (callback: CharacteristicGetCallback<Nullable<T>>) => {
+        maybeDevice
+          .then((device) => fn(device))
+          .then((val) => callback(null, val))
+          .catch(callback);
       }
-    : async (
-        value: CharacteristicValue,
-        callback: CharacteristicSetCallback,
-      ) => {
-        try {
-          const device = await maybeDevice;
-          callback(null, await fn(device, value));
-        } catch (err) {
-          callback(err);
-        }
+    : (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        maybeDevice
+          .then((device) => fn(device, value as any))
+          .then((val) => callback(null, val))
+          .catch(callback);
       };

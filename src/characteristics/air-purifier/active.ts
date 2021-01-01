@@ -7,13 +7,11 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.Active,
 ) {
-  const useDevice = withDevice(maybeDevice);
   const { ACTIVE, INACTIVE } = characteristic;
+  const useDevice = withDevice<typeof ACTIVE | typeof INACTIVE>(maybeDevice);
 
   maybeDevice.then((device) => {
-    // TODO: powerChanged doesn't work. Investigate in miio
-    device.on('powerChanged', (isOn) => {
-      // TODO: check device state, async state can be stale
+    device.on('powerChanged', (isOn: boolean) => {
       service.updateCharacteristic(characteristic, isOn ? ACTIVE : INACTIVE);
     });
   });
@@ -26,13 +24,13 @@ export function add(
     )
     .on(
       CharacteristicEventTypes.SET,
-      useDevice(async (device, value) => {
-        try {
-          await device.power(value);
-          return value;
-        } catch {
-          return (value as number) ^ 1;
+      useDevice(async (device, newStatus) => {
+        const currentStatus = await device.power();
+        if (currentStatus !== newStatus) {
+          const [{ code }] = await device.changePower(newStatus);
+          return code === 0 ? newStatus : undefined;
         }
+        return undefined;
       }),
     );
 }

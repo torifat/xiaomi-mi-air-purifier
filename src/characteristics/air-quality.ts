@@ -1,7 +1,7 @@
 import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
 import { withDevice } from '../with-device';
 
-function transformAQI(aqi: number) {
+function pm2_5ToAqi(aqi: number) {
   if (!aqi) {
     return 0; // Error or unknown response
   } else if (aqi <= 25) {
@@ -25,16 +25,16 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.AirQuality,
 ) {
-  const useDevice = withDevice(maybeDevice);
+  const useDevice = withDevice<number>(maybeDevice);
 
   maybeDevice.then((device) => {
-    device.on('pm2.5Changed', (value) => {
-      service.updateCharacteristic(characteristic, transformAQI(value));
+    device.on('pm2.5Changed', (value: number) => {
+      service.updateCharacteristic(characteristic, pm2_5ToAqi(value));
     });
   });
 
   return service.getCharacteristic(characteristic).on(
     CharacteristicEventTypes.GET,
-    useDevice(async (device) => transformAQI(await device.pm2_5())),
+    useDevice(async (device) => pm2_5ToAqi(await device.pm2_5())),
   );
 }

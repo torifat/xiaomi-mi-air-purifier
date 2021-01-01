@@ -24,31 +24,57 @@
         "required": true,
         "pattern": "^\\w{32}$"
       },
-      "showAirQuality": {
-        "title": "Show Air Quality",
+      "enableAirQuality": {
+        "title": "Air Quality",
         "type": "boolean",
         "default": true
       },
-      "showTemperature": {
-        "title": "Show Temperature",
+      "enableTemperature": {
+        "title": "Temperature",
         "type": "boolean",
         "default": true
       },
-      "showHumidity": {
-        "title": "Show Humidity",
+      "enableHumidity": {
+        "title": "Humidity",
         "type": "boolean",
         "default": true
       },
-      "enableLED": {
-        "title": "Enable LED",
+      "enableRotationSpeed": {
+        "title": "Rotation Speed",
         "type": "boolean",
-        "default": true
-      },
-      "enableBuzzer": {
-        "title": "Enable Buzzer",
-        "type": "boolean",
-        "default": true
+        "default": false,
+        "description": "Allows you to see and control the fan speed"
       }
     }
-  }
+  },
+  "layout": [
+    { "key": "name" },
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": ["address", "token"]
+    },
+    {
+      "type": "help",
+      "helpvalue": "Please check the <a target='_blank' href='https://github.com/torifat/xiaomi-mi-air-purifier#readme'>README</a> for instruction about how to get a <em>token</em>."
+    },
+    {
+      "type": "section",
+      "title": "Sensors",
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        { "key": "enableAirQuality" },
+        { "key": "enableTemperature" },
+        { "key": "enableHumidity" }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Advanced options",
+      "expandable": true,
+      "expanded": false,
+      "items": [{ "key": "enableRotationSpeed" }]
+    }
+  ]
 }

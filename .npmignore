@@ -1,5 +1,6 @@
 # Ignore source code
 src
+test.js
 
 # ------------- Defaults ------------- #
 
