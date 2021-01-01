@@ -7,7 +7,12 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.CurrentAirPurifierState,
 ) {
-  const { INACTIVE, IDLE, PURIFYING_AIR } = characteristic;
+  const {
+    INACTIVE,
+    // IDLE - Shows "Turning off.." with a spinner,
+    PURIFYING_AIR,
+  } = characteristic;
+
   const useDevice = withDevice<typeof INACTIVE | typeof PURIFYING_AIR>(
     maybeDevice,
   );
@@ -17,13 +22,6 @@ export function add(
       service.updateCharacteristic(
         characteristic,
         isOn ? PURIFYING_AIR : INACTIVE,
-      );
-    });
-
-    device.on('fanSpeedChanged', (speed: number) => {
-      service.updateCharacteristic(
-        characteristic,
-        speed > 0 ? PURIFYING_AIR : IDLE,
       );
     });
   });

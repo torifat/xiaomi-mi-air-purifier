@@ -29,7 +29,7 @@
     "homebridge-plugin"
   ],
   "dependencies": {
-    "@rifat/miio": "^1.1.0"
+    "@rifat/miio": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.6",

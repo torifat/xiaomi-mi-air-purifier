@@ -39,11 +39,17 @@
         "type": "boolean",
         "default": true
       },
-      "enableRotationSpeed": {
-        "title": "Rotation Speed",
+      "enableFanSpeedControl": {
+        "title": "Fan Speed",
         "type": "boolean",
         "default": false,
-        "description": "Allows you to see and control the fan speed"
+        "description": "Allows you to see control the fan speed."
+      },
+      "enableChildLockControl": {
+        "title": "Child Lock",
+        "type": "boolean",
+        "default": false,
+        "description": "Allows you to lock/unlock the physical control."
       }
     }
   },
@@ -74,7 +80,10 @@
       "title": "Advanced options",
       "expandable": true,
       "expanded": false,
-      "items": [{ "key": "enableRotationSpeed" }]
+      "items": [
+        { "key": "enableFanSpeedControl" },
+        { "key": "enableChildLockControl" }
+      ]
     }
   ]
 }

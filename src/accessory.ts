@@ -11,6 +11,7 @@ import { add as addActive } from './characteristics/air-purifier/active';
 import { add as addCurrentAirPurifierState } from './characteristics/air-purifier/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/air-purifier/target-air-purifier-state';
 import { add as addRotationSpeed } from './characteristics/air-purifier/rotation-speed';
+import { add as addLockPhysicalControls } from './characteristics/air-purifier/lock-physical-controls';
 import { add as addAirQuality } from './characteristics/air-quality';
 import { add as addPm2_5Density } from './characteristics/pm2_5-density';
 import { add as addCurrentTemperature } from './characteristics/current-temperature';
@@ -26,7 +27,8 @@ export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
   enableAirQuality: boolean;
   enableTemperature: boolean;
   enableHumidity: boolean;
-  enableRotationSpeed: boolean;
+  enableFanSpeedControl: boolean;
+  enableChildLockControl: boolean;
 }
 
 function isValidConfig(
@@ -40,12 +42,13 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
   protected readonly config: XiaomiMiAirPurifierAccessoryConfig;
 
   private readonly airPurifierService: Service;
+  private readonly accessoryInformationService: Service;
   private readonly airQualitySensorService?: Service;
   private readonly temperatureSensorService?: Service;
   private readonly humiditySensorService?: Service;
 
   private connection?: Promise<any>;
-  protected readonly device: Promise<any>;
+  protected readonly maybeDevice: Promise<any>;
 
   constructor(
     protected readonly log: Logger,
@@ -65,34 +68,46 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         HumiditySensor,
         AirQualitySensor,
         TemperatureSensor,
+        AccessoryInformation,
       },
       Characteristic,
     } = api.hap;
 
     this.name = config.name;
-    this.device = this.connect();
+    this.maybeDevice = this.connect().then((device) => {
+      log.info(`Connected to "${this.name}" @ ${this.config.address}!`);
+      return device;
+    });
 
     // Air Purifier Service
     // Required characteristics
     this.airPurifierService = new AirPurifier(this.name);
-    addActive(this.device, this.airPurifierService, Characteristic.Active);
+    addActive(this.maybeDevice, this.airPurifierService, Characteristic.Active);
     addCurrentAirPurifierState(
-      this.device,
+      this.maybeDevice,
       this.airPurifierService,
       Characteristic.CurrentAirPurifierState,
     );
     addTargetAirPurifierState(
-      this.device,
+      this.maybeDevice,
       this.airPurifierService,
       Characteristic.TargetAirPurifierState,
     );
 
     // Optional characteristics
-    if (config.enableRotationSpeed) {
+    if (config.enableFanSpeedControl) {
       addRotationSpeed(
-        this.device,
+        this.maybeDevice,
         this.airPurifierService,
         Characteristic.RotationSpeed,
+      );
+    }
+
+    if (config.enableChildLockControl) {
+      addLockPhysicalControls(
+        this.maybeDevice,
+        this.airPurifierService,
+        Characteristic.LockPhysicalControls,
       );
     }
 
@@ -102,12 +117,12 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         `Air Quality on ${this.name}`,
       );
       addAirQuality(
-        this.device,
+        this.maybeDevice,
         this.airQualitySensorService,
         Characteristic.AirQuality,
       );
       addPm2_5Density(
-        this.device,
+        this.maybeDevice,
         this.airQualitySensorService,
         Characteristic.PM2_5Density,
       );
@@ -120,7 +135,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       );
 
       addCurrentTemperature(
-        this.device,
+        this.maybeDevice,
         this.temperatureSensorService,
         Characteristic.CurrentTemperature,
       );
@@ -132,21 +147,30 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         `Humidity on ${this.name}`,
       );
       addCurrentRelativeHumidity(
-        this.device,
+        this.maybeDevice,
         this.humiditySensorService,
         Characteristic.CurrentRelativeHumidity,
       );
     }
+
+    this.accessoryInformationService = new AccessoryInformation().setCharacteristic(
+      Characteristic.Manufacturer,
+      'Xiaomi Corporation',
+    );
+
+    log.info(`${this.name} finished initializing!`);
   }
 
   connect() {
     if (!this.connection) {
       this.connection = new Promise((resolve) => {
         const { address, token } = this.config;
-        retry(async () => await miio.device({ address, token }), RETRY_DELAY)
+        // Now keeps retrying forever.
+        // Maybe can add a max retries number as an option
+        retry(() => miio.device({ address, token }), RETRY_DELAY)
           .then(resolve)
           .catch((e) => {
-            this.log.error('BOOOM!', e);
+            this.log.error('Error occurred during retry:', e);
           });
       });
     }
@@ -171,6 +195,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       this.airQualitySensorService,
       this.temperatureSensorService,
       this.humiditySensorService,
+      this.accessoryInformationService,
     ].filter(isDefined);
   }
 }
