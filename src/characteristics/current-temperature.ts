@@ -18,6 +18,6 @@ export function add(
   return service.getCharacteristic(characteristic).on(
     CharacteristicEventTypes.GET,
     // Temperature { value: 23.4, unit: 'C' }
-    useDevice(async (device) => await device.temperature().value),
+    useDevice(async (device) => (await device.temperature()).value),
   );
 }
