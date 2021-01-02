@@ -1,15 +1,20 @@
 import {
-  AccessoryConfig,
-  AccessoryPlugin,
   API,
   Logger,
   Service,
+  AccessoryConfig,
+  AccessoryPlugin,
 } from 'homebridge';
 import miio from '@rifat/miio';
 import { retry, isDefined } from './utils';
 import { add as addActive } from './characteristics/air-purifier/active';
 import { add as addCurrentAirPurifierState } from './characteristics/air-purifier/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/air-purifier/target-air-purifier-state';
+import { add as addFilterLifeLevel } from './characteristics/air-purifier/filter-life-level';
+import {
+  add as addFilterChangeIndication,
+  DEFAULT_FILTER_CHANGE_THRESHOLD,
+} from './characteristics/air-purifier/filter-change-indication';
 import { add as addRotationSpeed } from './characteristics/air-purifier/rotation-speed';
 import { add as addLockPhysicalControls } from './characteristics/air-purifier/lock-physical-controls';
 import { add as addAirQuality } from './characteristics/air-quality';
@@ -29,6 +34,7 @@ export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
   enableHumidity: boolean;
   enableFanSpeedControl: boolean;
   enableChildLockControl: boolean;
+  filterChangeThreshold: number;
 }
 
 function isValidConfig(
@@ -43,6 +49,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
 
   private readonly airPurifierService: Service;
   private readonly accessoryInformationService: Service;
+  private readonly filterMaintenanceService?: Service;
   private readonly airQualitySensorService?: Service;
   private readonly temperatureSensorService?: Service;
   private readonly humiditySensorService?: Service;
@@ -67,6 +74,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         AirPurifier,
         HumiditySensor,
         AirQualitySensor,
+        FilterMaintenance,
         TemperatureSensor,
         AccessoryInformation,
       },
@@ -92,6 +100,20 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       this.maybeDevice,
       this.airPurifierService,
       Characteristic.TargetAirPurifierState,
+    );
+    addFilterLifeLevel(
+      this.maybeDevice,
+      this.airPurifierService,
+      Characteristic.FilterLifeLevel,
+    );
+    addFilterChangeIndication(
+      this.maybeDevice,
+      this.airPurifierService,
+      Characteristic.FilterChangeIndication,
+      {
+        filterChangeThreshold:
+          config.filterChangeThreshold | DEFAULT_FILTER_CHANGE_THRESHOLD,
+      },
     );
 
     // Optional characteristics
@@ -153,6 +175,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       );
     }
 
+    // Device Info
     this.accessoryInformationService = new AccessoryInformation().setCharacteristic(
       Characteristic.Manufacturer,
       'Xiaomi Corporation',
@@ -195,6 +218,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       this.airQualitySensorService,
       this.temperatureSensorService,
       this.humiditySensorService,
+      this.filterMaintenanceService,
       this.accessoryInformationService,
     ].filter(isDefined);
   }

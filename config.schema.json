@@ -39,6 +39,14 @@
         "type": "boolean",
         "default": true
       },
+      "filterChangeThreshold": {
+        "title": "Filter Change Warning Threshold",
+        "type": "integer",
+        "default": 5,
+        "minimum": 0,
+        "maximum": 100,
+        "description": "Show <b>Change Filter</b> warning once Filter Life reaches this value."
+      },
       "enableFanSpeedControl": {
         "title": "Fan Speed",
         "type": "boolean",
@@ -62,7 +70,7 @@
     },
     {
       "type": "help",
-      "helpvalue": "Please check the <a target='_blank' href='https://github.com/torifat/xiaomi-mi-air-purifier#readme'>README</a> for instruction about how to get a <em>token</em>."
+      "helpvalue": "Please check the <a target='_blank' href='https://github.com/torifat/xiaomi-mi-air-purifier#getting-a-token'>README</a> for instruction about how to get a <em>token</em>."
     },
     {
       "type": "section",
@@ -81,6 +89,7 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        { "key": "filterChangeThreshold" },
         { "key": "enableFanSpeedControl" },
         { "key": "enableChildLockControl" }
       ]
