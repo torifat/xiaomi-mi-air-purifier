@@ -44,150 +44,152 @@ function isValidConfig(
 }
 
 export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
-  private readonly name: string;
-  protected readonly config: XiaomiMiAirPurifierAccessoryConfig;
+  private readonly name?: string;
+  protected readonly config?: XiaomiMiAirPurifierAccessoryConfig;
 
-  private readonly airPurifierService: Service;
-  private readonly accessoryInformationService: Service;
+  private readonly airPurifierService?: Service;
+  private readonly accessoryInformationService?: Service;
   private readonly filterMaintenanceService?: Service;
   private readonly airQualitySensorService?: Service;
   private readonly temperatureSensorService?: Service;
   private readonly humiditySensorService?: Service;
 
   private connection?: Promise<any>;
-  protected readonly maybeDevice: Promise<any>;
+  protected readonly maybeDevice?: Promise<any>;
 
   constructor(
     protected readonly log: Logger,
     config: AccessoryConfig,
     protected readonly api: API,
   ) {
-    if (!isValidConfig(config)) {
-      throw new Error(
-        'Your must provide IP address and token of the Air Purifier.',
-      );
-    }
-    this.config = config;
+    if (isValidConfig(config)) {
+      this.config = config;
 
-    const {
-      Service: {
-        AirPurifier,
-        HumiditySensor,
-        AirQualitySensor,
-        FilterMaintenance,
-        TemperatureSensor,
-        AccessoryInformation,
-      },
-      Characteristic,
-    } = api.hap;
+      const {
+        Service: {
+          AirPurifier,
+          HumiditySensor,
+          AirQualitySensor,
+          TemperatureSensor,
+          AccessoryInformation,
+        },
+        Characteristic,
+      } = api.hap;
 
-    this.name = config.name;
-    this.maybeDevice = this.connect().then((device) => {
-      log.info(`Connected to "${this.name}" @ ${this.config.address}!`);
-      return device;
-    });
+      this.name = config.name;
+      this.maybeDevice = this.connect(config).then((device) => {
+        log.info(`Connected to "${this.name}" @ ${config.address}!`);
+        return device;
+      });
 
-    // Air Purifier Service
-    // Required characteristics
-    this.airPurifierService = new AirPurifier(this.name);
-    addActive(this.maybeDevice, this.airPurifierService, Characteristic.Active);
-    addCurrentAirPurifierState(
-      this.maybeDevice,
-      this.airPurifierService,
-      Characteristic.CurrentAirPurifierState,
-    );
-    addTargetAirPurifierState(
-      this.maybeDevice,
-      this.airPurifierService,
-      Characteristic.TargetAirPurifierState,
-    );
-    addFilterLifeLevel(
-      this.maybeDevice,
-      this.airPurifierService,
-      Characteristic.FilterLifeLevel,
-    );
-    addFilterChangeIndication(
-      this.maybeDevice,
-      this.airPurifierService,
-      Characteristic.FilterChangeIndication,
-      {
-        filterChangeThreshold:
-          config.filterChangeThreshold | DEFAULT_FILTER_CHANGE_THRESHOLD,
-      },
-    );
-
-    // Optional characteristics
-    if (config.enableFanSpeedControl) {
-      addRotationSpeed(
+      // Air Purifier Service
+      // Required characteristics
+      this.airPurifierService = new AirPurifier(this.name);
+      addActive(
         this.maybeDevice,
         this.airPurifierService,
-        Characteristic.RotationSpeed,
+        Characteristic.Active,
       );
-    }
-
-    if (config.enableChildLockControl) {
-      addLockPhysicalControls(
+      addCurrentAirPurifierState(
         this.maybeDevice,
         this.airPurifierService,
-        Characteristic.LockPhysicalControls,
+        Characteristic.CurrentAirPurifierState,
       );
-    }
-
-    // Air Quality Sensor Service
-    if (config.enableAirQuality) {
-      this.airQualitySensorService = new AirQualitySensor(
-        `Air Quality on ${this.name}`,
-      );
-      addAirQuality(
+      addTargetAirPurifierState(
         this.maybeDevice,
-        this.airQualitySensorService,
-        Characteristic.AirQuality,
+        this.airPurifierService,
+        Characteristic.TargetAirPurifierState,
       );
-      addPm2_5Density(
-        this.maybeDevice,
-        this.airQualitySensorService,
-        Characteristic.PM2_5Density,
+
+      // Optional characteristics
+      if (config.enableFanSpeedControl) {
+        addRotationSpeed(
+          this.maybeDevice,
+          this.airPurifierService,
+          Characteristic.RotationSpeed,
+        );
+      }
+
+      if (config.enableChildLockControl) {
+        addLockPhysicalControls(
+          this.maybeDevice,
+          this.airPurifierService,
+          Characteristic.LockPhysicalControls,
+        );
+      }
+
+      // Air Quality Sensor Service
+      if (config.enableAirQuality) {
+        this.airQualitySensorService = new AirQualitySensor(
+          `Air Quality on ${this.name}`,
+        );
+        addAirQuality(
+          this.maybeDevice,
+          this.airQualitySensorService,
+          Characteristic.AirQuality,
+        );
+        addPm2_5Density(
+          this.maybeDevice,
+          this.airQualitySensorService,
+          Characteristic.PM2_5Density,
+        );
+        addFilterLifeLevel(
+          this.maybeDevice,
+          this.airQualitySensorService,
+          Characteristic.FilterLifeLevel,
+        );
+        addFilterChangeIndication(
+          this.maybeDevice,
+          this.airQualitySensorService,
+          Characteristic.FilterChangeIndication,
+          {
+            filterChangeThreshold:
+              config.filterChangeThreshold | DEFAULT_FILTER_CHANGE_THRESHOLD,
+          },
+        );
+      }
+
+      // Temperature Sensor Service
+      if (config.enableTemperature) {
+        this.temperatureSensorService = new TemperatureSensor(
+          `Temperature on ${this.name}`,
+        );
+
+        addCurrentTemperature(
+          this.maybeDevice,
+          this.temperatureSensorService,
+          Characteristic.CurrentTemperature,
+        );
+      }
+
+      // Humidity Sensor Service
+      if (config.enableHumidity) {
+        this.humiditySensorService = new HumiditySensor(
+          `Humidity on ${this.name}`,
+        );
+        addCurrentRelativeHumidity(
+          this.maybeDevice,
+          this.humiditySensorService,
+          Characteristic.CurrentRelativeHumidity,
+        );
+      }
+
+      // Device Info
+      this.accessoryInformationService = new AccessoryInformation().setCharacteristic(
+        Characteristic.Manufacturer,
+        'Xiaomi Corporation',
       );
+
+      log.info(`${this.name} finished initializing!`);
+    } else {
+      log.error('Your must provide IP address and token of the Air Purifier.');
     }
-
-    // Temperature Sensor Service
-    if (config.enableTemperature) {
-      this.temperatureSensorService = new TemperatureSensor(
-        `Temperature on ${this.name}`,
-      );
-
-      addCurrentTemperature(
-        this.maybeDevice,
-        this.temperatureSensorService,
-        Characteristic.CurrentTemperature,
-      );
-    }
-
-    // Humidity Sensor Service
-    if (config.enableHumidity) {
-      this.humiditySensorService = new HumiditySensor(
-        `Humidity on ${this.name}`,
-      );
-      addCurrentRelativeHumidity(
-        this.maybeDevice,
-        this.humiditySensorService,
-        Characteristic.CurrentRelativeHumidity,
-      );
-    }
-
-    // Device Info
-    this.accessoryInformationService = new AccessoryInformation().setCharacteristic(
-      Characteristic.Manufacturer,
-      'Xiaomi Corporation',
-    );
-
-    log.info(`${this.name} finished initializing!`);
   }
 
-  connect() {
+  connect(config) {
     if (!this.connection) {
       this.connection = new Promise((resolve) => {
-        const { address, token } = this.config;
+        const { address, token } = config;
         // Now keeps retrying forever.
         // Maybe can add a max retries number as an option
         retry(() => miio.device({ address, token }), RETRY_DELAY)
@@ -205,7 +207,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
    * Typical this only ever happens at the pairing process.
    */
   identify() {
-    this.log.info(`Identifying "${this.name}" @ ${this.config.address}`);
+    this.log.info(`Identifying "${this.name}" @ ${this.config?.address}`);
   }
 
   /*
