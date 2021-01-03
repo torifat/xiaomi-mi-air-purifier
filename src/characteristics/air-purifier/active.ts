@@ -30,7 +30,6 @@ export function add(
           const [{ code }] = await device.changePower(newStatus);
           return code === 0 ? newStatus : undefined;
         }
-        return undefined;
       }),
     );
 }
