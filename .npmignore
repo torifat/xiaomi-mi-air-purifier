@@ -9,6 +9,11 @@ test.js
 
 # eslint
 .eslintrc
+.eslintignore
+
+# prettier
+.prettierignore
+.prettierrc.json
 
 # typescript
 tsconfig.json
