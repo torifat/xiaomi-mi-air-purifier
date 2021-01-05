@@ -2,6 +2,8 @@
   <img title="HomeKit integration for Xiaomi Mi Air Purifier" src="../assets/media/xiaomi-mi-air-purifier@2x.png" width="1280">
 </p>
 
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 Control and monitor your **Xiaomi Mi Air Purifier** purifier with HomeKit.
 
 ## Features
