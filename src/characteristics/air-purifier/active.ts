@@ -1,5 +1,4 @@
-import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../../with-device';
+import { Service, Characteristic } from 'homebridge';
 
 // https://developers.homebridge.io/#/characteristic/Active
 export function add(
@@ -8,7 +7,6 @@ export function add(
   characteristic: typeof Characteristic.Active,
 ) {
   const { ACTIVE, INACTIVE } = characteristic;
-  const useDevice = withDevice<typeof ACTIVE | typeof INACTIVE>(maybeDevice);
 
   maybeDevice.then((device) => {
     device.on('powerChanged', (isOn: boolean) => {
@@ -18,18 +16,15 @@ export function add(
 
   return service
     .getCharacteristic(characteristic)
-    .on(
-      CharacteristicEventTypes.GET,
-      useDevice(async (device) => ((await device.power()) ? ACTIVE : INACTIVE)),
-    )
-    .on(
-      CharacteristicEventTypes.SET,
-      useDevice(async (device, newStatus) => {
-        const currentStatus = await device.power();
-        if (currentStatus !== newStatus) {
-          const [{ code }] = await device.changePower(newStatus);
-          return code === 0 ? newStatus : undefined;
-        }
-      }),
-    );
+    .onGet(async () => {
+      const device = await maybeDevice;
+      return (await device.power()) ? ACTIVE : INACTIVE;
+    })
+    .onSet(async function (this: Characteristic, newStatus) {
+      const device = await maybeDevice;
+      const currentStatus = await device.power();
+      if (currentStatus !== newStatus) {
+        await device.changePower(newStatus);
+      }
+    });
 }

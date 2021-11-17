@@ -1,5 +1,4 @@
 import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../../with-device';
 
 export const DEFAULT_FILTER_CHANGE_THRESHOLD = 5;
 
@@ -15,7 +14,6 @@ export function add(
   options: FilterChangeIndicationOptions,
 ) {
   const { FILTER_OK, CHANGE_FILTER } = characteristic;
-  const useDevice = withDevice<number>(maybeDevice);
 
   maybeDevice.then((device) => {
     device.on('filterLifeChanged', (value: number) => {
@@ -25,12 +23,10 @@ export function add(
     });
   });
 
-  return service.getCharacteristic(characteristic).on(
-    CharacteristicEventTypes.GET,
-    useDevice(async (device) =>
-      device.property('filter_life').value <= options.filterChangeThreshold
-        ? CHANGE_FILTER
-        : FILTER_OK,
-    ),
-  );
+  return service.getCharacteristic(characteristic).onGet(async () => {
+    const device = await maybeDevice;
+    return device.property('filter_life').value <= options.filterChangeThreshold
+      ? CHANGE_FILTER
+      : FILTER_OK;
+  });
 }

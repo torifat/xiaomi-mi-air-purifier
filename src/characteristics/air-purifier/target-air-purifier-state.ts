@@ -1,5 +1,4 @@
 import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../../with-device';
 import { MODE } from '../../miio-consts';
 
 // https://developers.homebridge.io/#/characteristic/TargetAirPurifierState
@@ -9,7 +8,6 @@ export function add(
   characteristic: typeof Characteristic.TargetAirPurifierState,
 ) {
   const { AUTO, MANUAL } = characteristic;
-  const useDevice = withDevice<typeof AUTO | typeof MANUAL>(maybeDevice);
 
   maybeDevice.then((device) => {
     device.on('modeChanged', (mode) => {
@@ -19,20 +17,16 @@ export function add(
 
   return service
     .getCharacteristic(characteristic)
-    .on(
-      CharacteristicEventTypes.GET,
-      useDevice(async (device) => ((await device.mode()) ? MANUAL : AUTO)),
-    )
-    .on(
-      CharacteristicEventTypes.SET,
-      useDevice(async (device, mode) => {
-        const newMode = mode === AUTO ? MODE.AUTO : MODE.NONE;
-        const currentMode = await device.mode();
-        if (newMode !== currentMode) {
-          const [{ code }] = await device.changeMode(newMode);
-          return code === 0 ? mode : undefined;
-        }
-        return undefined;
-      }),
-    );
+    .onGet(async () => {
+      const device = await maybeDevice;
+      return (await device.mode()) ? MANUAL : AUTO;
+    })
+    .onSet(async (mode) => {
+      const device = await maybeDevice;
+      const newMode = mode === AUTO ? MODE.AUTO : MODE.NONE;
+      const currentMode = await device.mode();
+      if (newMode !== currentMode) {
+        await device.changeMode(newMode);
+      }
+    });
 }

@@ -1,5 +1,4 @@
-import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../with-device';
+import { Service, Characteristic } from 'homebridge';
 
 function pm2_5ToAqi(aqi: number) {
   if (!aqi) {
@@ -25,16 +24,14 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.AirQuality,
 ) {
-  const useDevice = withDevice<number>(maybeDevice);
-
   maybeDevice.then((device) => {
     device.on('pm2.5Changed', (value: number) => {
       service.updateCharacteristic(characteristic, pm2_5ToAqi(value));
     });
   });
 
-  return service.getCharacteristic(characteristic).on(
-    CharacteristicEventTypes.GET,
-    useDevice(async (device) => pm2_5ToAqi(await device.pm2_5())),
-  );
+  return service.getCharacteristic(characteristic).onGet(async () => {
+    const device = await maybeDevice;
+    return pm2_5ToAqi(await device.pm2_5());
+  });
 }

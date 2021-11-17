@@ -1,5 +1,4 @@
-import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../with-device';
+import { Service, Characteristic } from 'homebridge';
 
 // https://developers.homebridge.io/#/characteristic/PM2_5Density
 export function add(
@@ -7,16 +6,14 @@ export function add(
   service: Service,
   characteristic: typeof Characteristic.PM2_5Density,
 ) {
-  const useDevice = withDevice<number>(maybeDevice);
-
   maybeDevice.then((device) => {
     device.on('pm2.5Changed', (value) => {
       service.updateCharacteristic(characteristic, value);
     });
   });
 
-  return service.getCharacteristic(characteristic).on(
-    CharacteristicEventTypes.GET,
-    useDevice(async (device) => await device.pm2_5()),
-  );
+  return service.getCharacteristic(characteristic).onGet(async () => {
+    const device = await maybeDevice;
+    return await device.pm2_5();
+  });
 }

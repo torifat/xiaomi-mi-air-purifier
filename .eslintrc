@@ -5,8 +5,7 @@
     "plugin:@typescript-eslint/eslint-recommended",
     // uses the recommended rules from the @typescript-eslint/eslint-plugin
     "plugin:@typescript-eslint/recommended",
-    "prettier",
-    "prettier/@typescript-eslint"
+    "prettier"
   ],
   "parserOptions": {
     "ecmaVersion": 2018,

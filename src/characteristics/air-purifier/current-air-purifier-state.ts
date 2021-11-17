@@ -1,5 +1,4 @@
 import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
-import { withDevice } from '../../with-device';
 
 // https://developers.homebridge.io/#/characteristic/CurrentAirPurifierState
 export function add(
@@ -13,10 +12,6 @@ export function add(
     PURIFYING_AIR,
   } = characteristic;
 
-  const useDevice = withDevice<typeof INACTIVE | typeof PURIFYING_AIR>(
-    maybeDevice,
-  );
-
   maybeDevice.then((device) => {
     device.on('powerChanged', (isOn: boolean) => {
       service.updateCharacteristic(
@@ -26,10 +21,9 @@ export function add(
     });
   });
 
-  return service.getCharacteristic(characteristic).on(
-    CharacteristicEventTypes.GET,
-    useDevice(async (device) =>
-      (await device.power()) ? PURIFYING_AIR : INACTIVE,
-    ),
-  );
+  return service.getCharacteristic(characteristic).onGet(async () => {
+    const device = await maybeDevice;
+    const isOn = await device.power();
+    return isOn ? PURIFYING_AIR : INACTIVE;
+  });
 }
