@@ -42,6 +42,7 @@ Show your Homebridge config.json here, remove any sensitive information.
 - **Homebridge Version**: <!-- homebridge -V -->
 - **Node.js Version**: <!-- node -v -->
 - **NPM Version**: <!-- npm -v -->
+- **Device**: <!--  Xiaomi Air Purifier 2H / Xiaomi Air Purifier 3H/ Xiaomi Air Purifier Pro H -->
 - **Operating System**: <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker / hb-service -->
 
 <!-- Click the "Preview" tab before you submit to ensure the formatting is correct. -->
