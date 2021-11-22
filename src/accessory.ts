@@ -75,13 +75,11 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         },
         Characteristic,
       } = api.hap;
-
       this.name = config.name;
       this.maybeDevice = this.connect(config).then((device) => {
         log.info(`Connected to "${this.name}" @ ${config.address}!`);
         return device;
       });
-
       // Air Purifier Service
       // Required characteristics
       this.airPurifierService = new AirPurifier(this.name);
