@@ -9,25 +9,18 @@ const toPercentage = (speed: number) => Math.round((speed / RATIO) * 100) / 100;
 
 // https://developers.homebridge.io/#/characteristic/Active
 export function add(
-  maybeDevice: Promise<any>,
+  device: any,
   service: Service,
   characteristic: typeof Characteristic.RotationSpeed,
 ) {
-  maybeDevice.then((device) => {
-    device.on('fanSpeedChanged', (speed) => {
-      service.updateCharacteristic(characteristic, toPercentage(speed));
-    });
+  device.on('fanSpeedChanged', (speed) => {
+    service.updateCharacteristic(characteristic, toPercentage(speed));
   });
 
   return service
     .getCharacteristic(characteristic)
-    .onGet(async () => {
-      const device = await maybeDevice;
-      return toPercentage(await device.fanSpeed());
-    })
+    .onGet(async () => toPercentage(await device.fanSpeed()))
     .onSet(async (speed) => {
-      console.log({ speed });
-      const device = await maybeDevice;
       // If the device isn't in manual mode change it first
       if ((await device.mode()) !== MODE.NONE) {
         await device.changeMode(MODE.NONE);

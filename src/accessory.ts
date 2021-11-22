@@ -5,8 +5,7 @@ import {
   AccessoryConfig,
   AccessoryPlugin,
 } from 'homebridge';
-import miio from '@rifat/miio';
-import { retry, isDefined } from './utils';
+import { isDefined } from './utils';
 import { add as addActive } from './characteristics/air-purifier/active';
 import { add as addCurrentAirPurifierState } from './characteristics/air-purifier/current-air-purifier-state';
 import { add as addTargetAirPurifierState } from './characteristics/air-purifier/target-air-purifier-state';
@@ -21,10 +20,7 @@ import { add as addAirQuality } from './characteristics/air-quality';
 import { add as addPm2_5Density } from './characteristics/pm2_5-density';
 import { add as addCurrentTemperature } from './characteristics/current-temperature';
 import { add as addCurrentRelativeHumidity } from './characteristics/current-relative-humidity';
-
-// TODO: Add this under "Advanced Settings"
-// Try to connect to the device after RETRY_DELAY ms delay in case of failure
-const RETRY_DELAY = 5000;
+import { AIR_PURIFIERS } from './xiaomi-metadata';
 
 export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
   token: string;
@@ -37,33 +33,32 @@ export interface XiaomiMiAirPurifierAccessoryConfig extends AccessoryConfig {
   filterChangeThreshold: number;
 }
 
-function isValidConfig(
+export function isValidConfig(
   config: AccessoryConfig,
 ): config is XiaomiMiAirPurifierAccessoryConfig {
   return !!config.token && !!config.address;
 }
 
-export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
-  private readonly name?: string;
-  protected readonly config?: XiaomiMiAirPurifierAccessoryConfig;
+export function xiaomiMiAirPurifierAccessoryFactory(device: any) {
+  return class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
+    readonly name?: string;
+    readonly config?: XiaomiMiAirPurifierAccessoryConfig;
 
-  private readonly airPurifierService?: Service;
-  private readonly accessoryInformationService?: Service;
-  private readonly filterMaintenanceService?: Service;
-  private readonly airQualitySensorService?: Service;
-  private readonly temperatureSensorService?: Service;
-  private readonly humiditySensorService?: Service;
+    readonly airPurifierService?: Service;
+    readonly accessoryInformationService?: Service;
+    readonly filterMaintenanceService?: Service;
+    readonly airQualitySensorService?: Service;
+    readonly temperatureSensorService?: Service;
+    readonly humiditySensorService?: Service;
 
-  private connection?: Promise<any>;
-  protected readonly maybeDevice?: Promise<any>;
+    connection?: Promise<any>;
 
-  constructor(
-    protected readonly log: Logger,
-    config: AccessoryConfig,
-    protected readonly api: API,
-  ) {
-    if (isValidConfig(config)) {
-      this.config = config;
+    constructor(
+      readonly log: Logger,
+      config: AccessoryConfig,
+      readonly api: API,
+    ) {
+      this.config = config as XiaomiMiAirPurifierAccessoryConfig;
 
       const {
         Service: {
@@ -77,34 +72,27 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
       } = api.hap;
 
       this.name = config.name;
-      this.maybeDevice = this.connect(config).then((device) => {
-        log.info(`Connected to "${this.name}" @ ${config.address}!`);
-        return device;
-      });
+      log.info(`Connected to "${this.name}" @ ${config.address}!`);
 
       // Air Purifier Service
       // Required characteristics
       this.airPurifierService = new AirPurifier(this.name);
-      addActive(
-        this.maybeDevice,
-        this.airPurifierService,
-        Characteristic.Active,
-      );
+      addActive(device, this.airPurifierService, Characteristic.Active);
       addCurrentAirPurifierState(
-        this.maybeDevice,
+        device,
         this.airPurifierService,
         Characteristic.CurrentAirPurifierState,
       );
       addTargetAirPurifierState(
-        this.maybeDevice,
+        device,
         this.airPurifierService,
         Characteristic.TargetAirPurifierState,
       );
 
       // Optional characteristics
-      if (config.enableFanSpeedControl) {
+      if (config.enableFanSpeedControl && device.matches('cap:fan-speed')) {
         addRotationSpeed(
-          this.maybeDevice,
+          device,
           this.airPurifierService,
           Characteristic.RotationSpeed,
         );
@@ -112,7 +100,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
 
       if (config.enableChildLockControl) {
         addLockPhysicalControls(
-          this.maybeDevice,
+          device,
           this.airPurifierService,
           Characteristic.LockPhysicalControls,
         );
@@ -124,22 +112,26 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
           `Air Quality on ${this.name}`,
         );
         addAirQuality(
-          this.maybeDevice,
+          device,
           this.airQualitySensorService,
           Characteristic.AirQuality,
         );
-        addPm2_5Density(
-          this.maybeDevice,
-          this.airQualitySensorService,
-          Characteristic.PM2_5Density,
-        );
+
+        if (device.matches('cap:pm2.5')) {
+          addPm2_5Density(
+            device,
+            this.airQualitySensorService,
+            Characteristic.PM2_5Density,
+          );
+        }
+
         addFilterLifeLevel(
-          this.maybeDevice,
+          device,
           this.airQualitySensorService,
           Characteristic.FilterLifeLevel,
         );
         addFilterChangeIndication(
-          this.maybeDevice,
+          device,
           this.airQualitySensorService,
           Characteristic.FilterChangeIndication,
           {
@@ -156,7 +148,7 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
         );
 
         addCurrentTemperature(
-          this.maybeDevice,
+          device,
           this.temperatureSensorService,
           Characteristic.CurrentTemperature,
         );
@@ -168,60 +160,44 @@ export class XiaomiMiAirPurifierAccessory implements AccessoryPlugin {
           `Humidity on ${this.name}`,
         );
         addCurrentRelativeHumidity(
-          this.maybeDevice,
+          device,
           this.humiditySensorService,
           Characteristic.CurrentRelativeHumidity,
         );
       }
 
       // Device Info
-      this.accessoryInformationService = new AccessoryInformation().setCharacteristic(
-        Characteristic.Manufacturer,
-        'Xiaomi Corporation',
-      );
+      this.accessoryInformationService = new AccessoryInformation()
+        .setCharacteristic(Characteristic.Manufacturer, 'Xiaomi Corporation')
+        .setCharacteristic(
+          Characteristic.Model,
+          AIR_PURIFIERS[device.miioModel] || device.miioModel,
+        );
 
       log.info(`${this.name} finished initializing!`);
-    } else {
-      log.error('Your must provide IP address and token of the Air Purifier.');
     }
-  }
 
-  connect(config) {
-    if (!this.connection) {
-      this.connection = new Promise((resolve) => {
-        const { address, token } = config;
-        // Now keeps retrying forever.
-        // Maybe can add a max retries number as an option
-        retry(() => miio.device({ address, token }), RETRY_DELAY)
-          .then(resolve)
-          .catch((e) => {
-            this.log.error('Error occurred during retry:', e);
-          });
-      });
+    /*
+     * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
+     * Typical this only ever happens at the pairing process.
+     */
+    identify() {
+      this.log.info(`Identifying "${this.name}" @ ${this.config?.address}`);
     }
-    return this.connection;
-  }
 
-  /*
-   * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
-   * Typical this only ever happens at the pairing process.
-   */
-  identify() {
-    this.log.info(`Identifying "${this.name}" @ ${this.config?.address}`);
-  }
-
-  /*
-   * This method is called directly after creation of this instance.
-   * It should return all services which should be added to the accessory.
-   */
-  getServices(): Service[] {
-    return [
-      this.airPurifierService,
-      this.airQualitySensorService,
-      this.temperatureSensorService,
-      this.humiditySensorService,
-      this.filterMaintenanceService,
-      this.accessoryInformationService,
-    ].filter(isDefined);
-  }
+    /*
+     * This method is called directly after creation of this instance.
+     * It should return all services which should be added to the accessory.
+     */
+    getServices(): Service[] {
+      return [
+        this.airPurifierService,
+        this.airQualitySensorService,
+        this.temperatureSensorService,
+        this.humiditySensorService,
+        this.filterMaintenanceService,
+        this.accessoryInformationService,
+      ].filter(isDefined);
+    }
+  };
 }

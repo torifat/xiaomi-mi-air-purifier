@@ -2,7 +2,7 @@ import { Service, Characteristic, CharacteristicEventTypes } from 'homebridge';
 
 // https://developers.homebridge.io/#/characteristic/CurrentAirPurifierState
 export function add(
-  maybeDevice: Promise<any>,
+  device: any,
   service: Service,
   characteristic: typeof Characteristic.CurrentAirPurifierState,
 ) {
@@ -12,18 +12,21 @@ export function add(
     PURIFYING_AIR,
   } = characteristic;
 
-  maybeDevice.then((device) => {
-    device.on('powerChanged', (isOn: boolean) => {
-      service.updateCharacteristic(
-        characteristic,
-        isOn ? PURIFYING_AIR : INACTIVE,
-      );
-    });
+  device.on('powerChanged', (isOn: boolean) => {
+    service.updateCharacteristic(
+      characteristic,
+      isOn ? PURIFYING_AIR : INACTIVE,
+    );
   });
 
-  return service.getCharacteristic(characteristic).onGet(async () => {
-    const device = await maybeDevice;
-    const isOn = await device.power();
-    return isOn ? PURIFYING_AIR : INACTIVE;
-  });
+  return (
+    service
+      .getCharacteristic(characteristic)
+      // Default value
+      .updateValue(INACTIVE)
+      .onGet(async () => {
+        const isOn = await device.power();
+        return isOn ? PURIFYING_AIR : INACTIVE;
+      })
+  );
 }

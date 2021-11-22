@@ -20,18 +20,15 @@ function pm2_5ToAqi(aqi: number) {
 
 // https://developers.homebridge.io/#/characteristic/AirQuality
 export function add(
-  maybeDevice: Promise<any>,
+  device: any,
   service: Service,
   characteristic: typeof Characteristic.AirQuality,
 ) {
-  maybeDevice.then((device) => {
-    device.on('pm2.5Changed', (value: number) => {
-      service.updateCharacteristic(characteristic, pm2_5ToAqi(value));
-    });
+  device.on('pm2.5Changed', (value: number) => {
+    service.updateCharacteristic(characteristic, pm2_5ToAqi(value));
   });
 
-  return service.getCharacteristic(characteristic).onGet(async () => {
-    const device = await maybeDevice;
-    return pm2_5ToAqi(await device.pm2_5());
-  });
+  return service
+    .getCharacteristic(characteristic)
+    .onGet(async () => pm2_5ToAqi(await device.pm2_5()));
 }

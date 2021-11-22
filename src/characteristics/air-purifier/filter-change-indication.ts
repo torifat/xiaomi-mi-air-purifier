@@ -8,25 +8,29 @@ interface FilterChangeIndicationOptions {
 
 // https://developers.homebridge.io/#/characteristic/FilterChangeIndication
 export function add(
-  maybeDevice: Promise<any>,
+  device: any,
   service: Service,
   characteristic: typeof Characteristic.FilterChangeIndication,
   options: FilterChangeIndicationOptions,
 ) {
   const { FILTER_OK, CHANGE_FILTER } = characteristic;
 
-  maybeDevice.then((device) => {
-    device.on('filterLifeChanged', (value: number) => {
-      if (value <= options.filterChangeThreshold) {
-        service.updateCharacteristic(characteristic, CHANGE_FILTER);
-      }
-    });
+  device.on('filterLifeChanged', (value: number) => {
+    if (value <= options.filterChangeThreshold) {
+      service.updateCharacteristic(characteristic, CHANGE_FILTER);
+    }
   });
 
-  return service.getCharacteristic(characteristic).onGet(async () => {
-    const device = await maybeDevice;
-    return device.property('filter_life').value <= options.filterChangeThreshold
-      ? CHANGE_FILTER
-      : FILTER_OK;
-  });
+  return (
+    service
+      .getCharacteristic(characteristic)
+      // Default value
+      .updateValue(FILTER_OK)
+      .onGet(async () => {
+        return device.property('filter_life').value <=
+          options.filterChangeThreshold
+          ? CHANGE_FILTER
+          : FILTER_OK;
+      })
+  );
 }
