@@ -25,7 +25,7 @@ export function add(
 
   return service.getCharacteristic(characteristic).onGet(async () => {
     const device = await maybeDevice;
-    return device.property('filter_life').value <= options.filterChangeThreshold
+    return (await device.filterLifeLevel()) <= options.filterChangeThreshold
       ? CHANGE_FILTER
       : FILTER_OK;
   });

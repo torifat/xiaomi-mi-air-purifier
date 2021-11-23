@@ -14,6 +14,6 @@ export function add(
 
   return service.getCharacteristic(characteristic).onGet(async () => {
     const device = await maybeDevice;
-    return device.property('filter_life').value;
+    return await device.filterLifeLevel();
   });
 }
