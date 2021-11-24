@@ -33,11 +33,11 @@ Install using `npm`:
 npm install -g homebridge-xiaomi-mi-air-purifier
 ```
 
-Or, search for `homebridge-xiaomi-mi-air-purifier ` in Plugins.
+Or, search for `homebridge-xiaomi-mi-air-purifier ` in Plugins. Note that it might be neccessary to enter the search string inside double quotes i.e. `"homebridge-xiaomi-mi-air-purifier"` in some Homebridge UI variants (such as [Hoobs](https://hoobs.com/)) in order to find it among the plethora of similarly named plugins.
 
 ## Configuration
 
-Use [Homebridge Config UI X](https://github.com/oznu/homebridge-config-ui-x) to configure the plugin (highly recommended) otherwise head over to [Manual Config](#manual-config)
+configure the plugin in the GUI / [Homebridge Config UI X](https://github.com/oznu/homebridge-config-ui-x) (highly recommended), otherwise head over to [Manual Config](#manual-config)
 
  <img title="Settings: Xiaomi Mi Air Purifier" src="../assets/media/settings-xiaomi-mi-air-purifier.png" width="726">
 
