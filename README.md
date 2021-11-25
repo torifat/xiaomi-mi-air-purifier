@@ -39,7 +39,7 @@ Note that it might be neccessary to enter the search string inside double quotes
 
 ## Configuration
 
-configure the plugin in the GUI / [Homebridge Config UI X](https://github.com/oznu/homebridge-config-ui-x) (highly recommended), otherwise head over to [Manual Config](#manual-config)
+Configure the plugin in the GUI / [Homebridge Config UI X](https://github.com/oznu/homebridge-config-ui-x) (highly recommended), otherwise head over to [Manual Config](#manual-config)
 
  <img title="Settings: Xiaomi Mi Air Purifier" src="../assets/media/settings-xiaomi-mi-air-purifier.png" width="726">
 
