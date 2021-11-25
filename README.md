@@ -33,7 +33,9 @@ Install using `npm`:
 npm install -g homebridge-xiaomi-mi-air-purifier
 ```
 
-Or, search for `homebridge-xiaomi-mi-air-purifier ` in Plugins. Note that it might be neccessary to enter the search string inside double quotes i.e. `"homebridge-xiaomi-mi-air-purifier"` in some Homebridge UI variants (such as [Hoobs](https://hoobs.com/)) in order to find it among the plethora of similarly named plugins.
+Or, search for `homebridge-xiaomi-mi-air-purifier ` in Plugins. 
+
+Note that it might be neccessary to enter the search string inside double quotes i.e. `"homebridge-xiaomi-mi-air-purifier"` in some Homebridge UI variants (such as [Hoobs](https://hoobs.com/)) in order to find it among the plethora of similarly named plugins.
 
 ## Configuration
 
