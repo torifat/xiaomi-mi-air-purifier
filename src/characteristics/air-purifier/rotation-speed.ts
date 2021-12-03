@@ -26,8 +26,8 @@ export function add(
       return toPercentage(await device.fanSpeed());
     })
     .onSet(async (speed) => {
-      console.log({ speed });
       const device = await maybeDevice;
+      console.log(device);
       // If the device isn't in manual mode change it first
       if ((await device.mode()) !== MODE.NONE) {
         await device.changeMode(MODE.NONE);
